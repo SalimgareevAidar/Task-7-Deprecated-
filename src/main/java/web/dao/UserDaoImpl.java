@@ -1,7 +1,9 @@
 package web.dao;
 
 
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,21 +18,18 @@ import java.util.List;
 @Transactional
 public class UserDaoImpl implements UserDao {
 
-    @Autowired
-    private SessionFactory sessionFactory;
+    @PersistenceContext
+    private EntityManager sessionFactory;
 
     @Override
     public List<User> getUsers() {
-        Query<User> query = sessionFactory.getCurrentSession().createQuery("from User", User.class);
-        return query.getResultList();
+        return sessionFactory.createQuery("from User", User.class).getResultList();
     }
 
     @Override
     public User getUserById(int id) {
         try {
-            Query<User> query = sessionFactory.getCurrentSession().createQuery("from User where id=:id", User.class);
-            query.setParameter("id", id);
-            return query.getSingleResult();
+            return sessionFactory.createQuery("from User where id=:id", User.class).setParameter("id", id).getSingleResult();
         } catch (NoResultException e) {
             return null;
         }
@@ -38,16 +37,16 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public void addUser(User newUser) {
-        sessionFactory.getCurrentSession().persist(newUser);
+        sessionFactory.persist(newUser);
     }
 
     @Override
     public void editUser(User editUser) {
-        sessionFactory.getCurrentSession().merge(editUser);
+        sessionFactory.merge(editUser);
     }
 
     @Override
     public void deleteUserById(int id) {
-        sessionFactory.getCurrentSession().remove(getUserById(id));
+        sessionFactory.remove(getUserById(id));
     }
 }
